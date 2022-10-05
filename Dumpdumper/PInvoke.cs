@@ -51,6 +51,16 @@ namespace Dumpdumper
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool CloseHandle(IntPtr hObject);
 
+        [DllImport("dbghelp.dll", EntryPoint = "MiniDumpWriteDump", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+        public static extern bool MiniDumpWriteDump(
+            IntPtr hProcess,
+            int processId,
+            SafeHandle hFile,
+            uint dumpType,
+            IntPtr exceptionParam,
+            IntPtr userStreamParam,
+            IntPtr callbackParam);
+
     }
 
         

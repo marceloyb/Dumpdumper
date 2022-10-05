@@ -116,6 +116,11 @@ namespace Dumpdumper
             public int NonPagedPoolUsage;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SafeFileHandle
+        { 
+            public UNICODE_STRING Name;
+        }
 
     }
 }

