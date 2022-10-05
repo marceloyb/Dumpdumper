@@ -17,8 +17,7 @@ namespace Dumpdumper
         public static extern IntPtr OpenProcess(
                    Structs.PROCESS_ACCESS processAccess,
                    bool bInheritHandle,
-                   int processId
-               );
+                   int processId);
 
         [DllImport("ntdll.dll")]
         //[return: MarshalAs(UnmanagedType.Bool)]
